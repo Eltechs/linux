@@ -138,10 +138,19 @@ typedef struct user_fpsimd_state elf_fpregset_t;
  */
 #define ELF_PLAT_INIT(_r, load_addr)	(_r)->regs[0] = 0
 
-#define SET_PERSONALITY(ex)						\
-({									\
-	clear_bit(TIF_32BIT, &current->mm->context.flags);		\
-	clear_thread_flag(TIF_32BIT);					\
+#define SET_PERSONALITY(ex)                                     \
+({                                                              \
+    clear_bit(TIF_32BIT, &current->mm->context.flags);          \
+    clear_thread_flag(TIF_32BIT);                               \
+    if (  current->personality & ADDR_LIMIT_32BIT_ISA64 )       \
+    {                                                           \
+        set_bit(TIF_32ADDR, &current->mm->context.flags);	\
+        set_thread_flag(TIF_32ADDR);                            \
+    } else                                                      \
+    {                                                           \
+        clear_bit( TIF_32ADDR, &current->mm->context.flags);	\
+        clear_thread_flag( TIF_32ADDR);                         \
+    }                                                           \
 })
 
 /* update AT_VECTOR_SIZE_ARCH if the number of NEW_AUX_ENT entries changes */
